@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>study-timer-component</title>
+  </head>
+  <body>
+    <study-timer-component duration="5" break-duration="5" theme="light"></study-timer-component>
+    <study-timer-component duration="50" break-duration="10" theme="dark"></study-timer-component>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <script type="module">
+      import '/src/main.jsx';
+
+      const timer = document.querySelector('study-timer-component');
+
+      timer.addEventListener('timer-started', () => {
+        console.log('Timer started');
+      });
+
+      timer.addEventListener('timer-paused', () => {
+        console.log('Timer paused');
+      });
+
+      timer.addEventListener('timer-reset', () => {
+        console.log('Timer reset');
+      });
+
+      timer.addEventListener('timer-finished', (event) => {
+        console.log('Timer finished:', event.detail);
+      });
+
+      timer.addEventListener('mode-changed', (event) => {
+        console.log('Mode changed:', event.detail.mode);
+      });
+    </script>
+  </body>
+</html>
