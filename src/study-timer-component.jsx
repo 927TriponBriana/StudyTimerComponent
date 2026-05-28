@@ -28,6 +28,7 @@ class StudyTimerComponent extends HTMLElement {
             })
           )
         }
+        soundEnabled={this.getAttribute('sound') === 'true'}
       />
     );
   }
