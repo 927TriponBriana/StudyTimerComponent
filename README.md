@@ -1,7 +1,7 @@
 # StudyTimerComponent
 Study Timer Web Component is a reusable web component built using React that can be embedded into any web application through a custom HTML tag.
 
-## Instalation
+## Installation
 #### 1. Clone the repository
 Open a terminal and run the following command to download the source code:
 ``` 
@@ -33,7 +33,7 @@ There are four customizable parameters:
 | duration  | Duration of a focus session (minutes) | Number |25|
 | break-duration  | Duration of a break session (minutes) | Number |5|
 | theme | Component theme (light or dark) | String |light|
-| sound |Enables sound notification when a session finishes|Boolean|false|
+| sound |Enables a sound notification when a session finishes|Boolean|false|
 
 ## Features
 The component currently provides the following functionality:
@@ -51,7 +51,7 @@ Statistics can be reset independently from the timer.
 #### 2. Theme Support
 The component supports two visual themes (light mode and dark mode). This can be configured through component attributes.
 #### 3. Circular Progress Indicator & Sound Notifications
-The remaining session time is visualized using an animated SVG circular progress indicator. Also, the component can play a notification sound whenever a study or break session finishes.
+The remaining session time is visualized using an animated SVG circular progress indicator.
 The progress circle is implemented using two SVG `<circle>` elements:
 - A background circle
 - A progress circle
@@ -99,6 +99,38 @@ The SVG rendering logic:
 ```
 
 As the timer decreases, the `progress` value is recalculated and the `strokeDashoffset` property updates automatically, creating a smooth animated countdown effect.
+
+When a focus or break session finishes, the component can generate a notification sound using the Web Audio API.
+
+The implementation creates a temporary oscillator and gain node to generate a short beep:
+
+```jsx
+const playNotificationSound = useCallback(() => {
+    if (!soundEnabled) return;
+
+    const audioContext = new AudioContext();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 880;
+    oscillator.type = 'sine';
+
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + 0.5
+    );
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.5);
+}, [soundEnabled]);
+```
+
+The sound is triggered automatically when a study or break session reaches zero.
+
 #### 4. Local Storage Persistence
 The component automatically saves:
 - Current timer mode
@@ -108,33 +140,26 @@ This allows users to refresh the page without losing progress.
 #### 5. Custom Events
 The component exposes several custom events that allow external applications to react to timer state changes.
 
-timer-started  (triggered when the timer starts):
+| Event | Description |
+|---------|-------------|
+| timer-started | Triggered when the timer starts |
+| timer-paused | Triggered when the timer pauses |
+| timer-reset | Triggered when the timer is reset |
+| timer-finished | Triggered when a focus or break session finishes |
+| mode-changed | Triggered when switching between focus and break modes |
+
+Example usage:
+
 ```javascript
+const timer = document.querySelector('study-timer-component');
+
 timer.addEventListener('timer-started', () => {
   console.log('Timer started');
 });
 ```
-timer-paused (triggered when the timer pauses):
-```javascript
-timer.addEventListener('timer-paused', () => {
-  console.log('Timer paused');
-});
-```
-timer-reset (triggered when the timer resets):
-```javascript
-timer.addEventListener('timer-reset', () => {
-  console.log('Timer reset');
-});
-```
-timer-finished (triggered when a study or break session finishes):
-```javascript
-timer.addEventListener('timer-finished', (event) => {
-  console.log('Timer finished:', event.detail);
-});
-```
-mode-changed (triggered when switching between focus and break modes):
-```javascript
-timer.addEventListener('mode-changed', (event) => {
-  console.log('Mode changed:', event.detail.mode);
-});
-```
+
+## Demo
+<p align="center">
+  <img src="images/StudyTimerLightMode.png" width="350">
+  <img src="images/StudyTimerDarkMode.png" width="350">
+</p>
